@@ -1,12 +1,31 @@
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
 
 use chumsky::Parser;
+use imp::ast::Expr;
 
-fn parse(src: &str) {
+fn display_program(expr: &Expr, store: &BTreeMap<Box<str>, Expr>) -> String {
+    format!(
+        "{}, {{{}}}",
+        expr,
+        store
+            .iter()
+            .map(|(k, v)| format!("{k} -> {v}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    )
+}
+
+fn run(src: &str, store: &mut BTreeMap<Box<str>, Expr>) {
     match imp::parse::parser().parse(&src).into_result() {
-        Ok(expr) => {
-            println!("{}\n{}", expr, expr.sexp());
+        Ok(mut expr) => {
+            println!("=> {}", display_program(&expr, store));
+
+            while expr.can_transition() {
+                expr.transition(store);
+                println!("=> {}", display_program(&expr, store));
+            }
         }
         Err(e) => {
             dbg!(e);
@@ -23,8 +42,10 @@ fn main() {
         let mut src = String::new();
         file.read_to_string(&mut src).unwrap();
 
-        parse(&src);
+        run(&src, &mut BTreeMap::new());
     } else {
+        let mut store = BTreeMap::new();
+
         loop {
             print!("IMP> ");
             std::io::stdout().flush().unwrap();
@@ -32,7 +53,7 @@ fn main() {
             let mut input = String::new();
             std::io::stdin().read_line(&mut input).unwrap();
 
-            parse(&input);
+            run(&input, &mut store);
         }
     }
 }

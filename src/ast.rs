@@ -1,5 +1,6 @@
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub enum Expr {
+    #[default]
     Skip,
     Boolean(bool),
     Integer(i64),
