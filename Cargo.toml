@@ -1,0 +1,15 @@
+[package]
+name = "imp"
+version = "0.1.0"
+authors = ["Fraser Li <fraserli@fmli.dev>"]
+edition = "2024"
+repository = "https://github.com/fraserli/imp"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[[bin]]
+name = "imp"
+path = "src/main.rs"
+
+[dependencies]
+chumsky = { version = "0.10.1", features = ["pratt"] }
