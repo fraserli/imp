@@ -23,7 +23,7 @@ pub fn parser<'a>() -> impl Parser<'a, &'a str, Expr, extra::Err<Rich<'a, char>>
     recursive(|sequence| {
         let expression = recursive(|expression| {
             let assignment = location
-                .then(just('=').padded().ignore_then(expression.clone()))
+                .then(just(":=").padded().ignore_then(expression.clone()))
                 .map(|(location, value)| Expr::assignment(location, value));
 
             let if_then_else = just("if")
@@ -99,10 +99,10 @@ mod test {
 
     #[test]
     fn parse_assignment() {
-        test("a = 1", "(= a 1)");
-        test("a = 1 + 2", "(= a (+ 1 2))");
-        test("a = (b = 1; !b)", "(= a (; (= b 1) !b))");
-        test("a = if !cond then 1 else 2", "(= a (if !cond 1 2))");
+        test("a := 1", "(:= a 1)");
+        test("a := 1 + 2", "(:= a (+ 1 2))");
+        test("a := (b := 1; !b)", "(:= a (; (:= b 1) !b))");
+        test("a := if !cond then 1 else 2", "(:= a (if !cond 1 2))");
     }
 
     #[test]
@@ -127,23 +127,23 @@ mod test {
     #[test]
     fn parse_complex() {
         test(
-            "i = 0; a = 10; b = 0; while !a >= !b + 2 do (a = !b + 5; i = !i + 1); a = 0",
-            "(; (= i 0) (= a 10) (= b 0) (while (>= !a (+ !b 2)) (; (= a (+ !b 5)) (= i (+ !i 1)))) (= a 0))",
+            "i := 0; a := 10; b := 0; while !a >= !b + 2 do (a := !b + 5; i := !i + 1); a := 0",
+            "(; (:= i 0) (:= a 10) (:= b 0) (while (>= !a (+ !b 2)) (; (:= a (+ !b 5)) (:= i (+ !i 1)))) (:= a 0))",
         );
 
         test(
-            "while 10 >= !i do if !b then a = 1 else a = 2; a = 3",
-            "(; (while (>= 10 !i) (if !b (= a 1) (= a 2))) (= a 3))",
+            "while 10 >= !i do if !b then a := 1 else a := 2; a := 3",
+            "(; (while (>= 10 !i) (if !b (:= a 1) (:= a 2))) (:= a 3))",
         );
 
         test(
-            "while 10 >= !i do (if !b then a = 1 else a = 2; a = 3)",
-            "(while (>= 10 !i) (; (if !b (= a 1) (= a 2)) (= a 3)))",
+            "while 10 >= !i do (if !b then a := 1 else a := 2; a := 3)",
+            "(while (>= 10 !i) (; (if !b (:= a 1) (:= a 2)) (:= a 3)))",
         );
 
         test(
-            "while 10 >= !i do if !b then a = 1 else (a = 2; a = 3)",
-            "(while (>= 10 !i) (if !b (= a 1) (; (= a 2) (= a 3))))",
+            "while 10 >= !i do if !b then a := 1 else (a := 2; a := 3)",
+            "(while (>= 10 !i) (if !b (:= a 1) (; (:= a 2) (:= a 3))))",
         );
     }
 }

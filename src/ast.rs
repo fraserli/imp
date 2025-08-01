@@ -114,7 +114,7 @@ impl Expr {
             Expr::Integer(n) => n.to_string(),
             Expr::Dereference(location) => format!("!{location}"),
             Expr::Assignment(box Assignment { location, value }) => {
-                format!("(= {location} {})", value.sexp())
+                format!("(:= {location} {})", value.sexp())
             }
             Expr::Operation(box Operation { op, lhs, rhs }) => {
                 format!("({op} {} {})", lhs.sexp(), rhs.sexp())
@@ -175,7 +175,7 @@ impl std::fmt::Display for Expr {
             Expr::Integer(n) => f.write_str(&n.to_string()),
             Expr::Dereference(location) => write!(f, "!{location}"),
             Expr::Assignment(box Assignment { location, value }) => {
-                write!(f, "{} = {}", location, E(value))
+                write!(f, "{} := {}", location, E(value))
             }
             Expr::Operation(box Operation { op, lhs, rhs }) => {
                 write!(f, "{} {op} {}", E(lhs), E(rhs))
